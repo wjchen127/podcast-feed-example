@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:googleplay="http://www.google.com/schemas/play-podcasts/1.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:psc="https://podlove.org/simple-chapters/" xmlns:kkbox="https://podcast.kkbox.com/">
+    <channel>
+        <title><![CDATA[陳威捷的Podcast]]></title>
+        <description><![CDATA[<p>展示用途 <br />wjchen127@gmail.com <br /> <br /> <br />-- <br />Hosting provided by SoundOn <br /> <br/>Powered by <a href="https://firstory.me">Firstory Hosting</a></p>]]></description>
+        <link>https://podcast-feed-example-364516.de.r.appspot.com</link>
+        <image>
+            <url>https://podcast-feed-example-364516.de.r.appspot.com/getavatar</url>
+            <title>陳威捷的Podcast</title>
+            <link>https://podcast-feed-example-364516.de.r.appspot.com</link>
+        </image>
+        <generator>Firstory v2</generator>
+        <lastBuildDate>Wed, 28 Sep 2022 10:49:22 GMT</lastBuildDate>
+        <atom:link href="https://podcast-feed-example-364516.de.r.appspot.com/rss/someoneid" rel="self" type="application/rss+xml"/>
+        <pubDate>Mon, 03 Aug 2020 06:49:14 GMT</pubDate>
+        <copyright><![CDATA[陳威捷]]></copyright>
+        <language><![CDATA[zh]]></language>
+        <atom:link href="https://pubsubhubbub.appspot.com/" rel="hub"/>
+        <category><![CDATA[Comedy]]></category>
+        <googleplay:description><![CDATA[<p>展示用途 <br />wjchen127@gmail.com <br /> <br /> <br />-- <br />Hosting provided by SoundOn <br /> <br/>Powered by <a href="https://firstory.me">Firstory Hosting</a></p>]]></googleplay:description>
+        <itunes:summary><![CDATA[<p>展示用途 <br />wjchen127@gmail.com <br /> <br /> <br />-- <br />Hosting provided by SoundOn <br /> <br/>Powered by <a href="https://firstory.me">Firstory Hosting</a></p>]]></itunes:summary>
+        <googleplay:image href="https://podcast-feed-example-364516.de.r.appspot.com/getavatar"/>
+        <itunes:image href="https://podcast-feed-example-364516.de.r.appspot.com/getavatar"/>
+        <itunes:type>episodic</itunes:type>
+        <itunes:explicit>yes</itunes:explicit>
+        <itunes:category text="Comedy">
+        </itunes:category>
+        <googleplay:author><![CDATA[陳威捷]]></googleplay:author>
+        <itunes:author><![CDATA[陳威捷]]></itunes:author>
+        <itunes:owner>
+            <itunes:name><![CDATA[陳威捷]]></itunes:name>
+            <itunes:email>wjchen127@gmail.com</itunes:email>
+        </itunes:owner>
+        <item>
+            <title><![CDATA[EP1-單集標題]]></title>
+            <description><![CDATA[單集介紹...]]></description>
+            <link>https://podcast-feed-example-364516.de.r.appspot.com</link>
+            <dc:creator><![CDATA[陳威捷]]></dc:creator>
+            <pubDate>Wed, 28 Sep 2022 10:49:21 GMT</pubDate>
+            <enclosure url="https://podcast-feed-example-364516.de.r.appspot.com/getmp3" length="22708" type="audio/mpeg"/>
+            <itunes:duration>0.033</itunes:duration>
+            <itunes:image href="https://podcast-feed-example-364516.de.r.appspot.com/getavatar"/>
+            <googleplay:description><![CDATA[單集介紹...]]></googleplay:description>
+            <itunes:summary><![CDATA[單集介紹...]]></itunes:summary>
+            <content:encoded><![CDATA[單集介紹...]]></content:encoded>
+            <itunes:explicit>no</itunes:explicit>
+            <itunes:season>1</itunes:season>
+            <itunes:episode>1</itunes:episode>
+        </item>
+    </channel>
+</rss>
