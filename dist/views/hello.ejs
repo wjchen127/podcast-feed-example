@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Hello</title>
+        <!-- CSS (load bootstrap from a CDN) -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css">
+        <style>
+            #formdiv{
+                width: 30%;
+                margin:auto;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="formdiv">
+            <form class="needs-validation"  id="_form1">
+                    <div class="form-group">
+                    <label>節目名稱</label>
+                    <input type="text" class="form-control" required name="channelTitle">
+                    <div class="invalid-feedback">
+                        請輸入節目名稱
+                    </div>
+                    </div>
+                    <div class="form-group">
+                        <label>節目介紹</label>
+                        <textarea class="form-control" rows="3" required name="channelDescription"></textarea>
+                        <div class="invalid-feedback">
+                            請輸入節目介紹
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>作者</label>
+                        <input type="text" class="form-control" required name="author">
+                        <div class="invalid-feedback">
+                            請輸入作者名稱
+                        </div>
+                    </div>  
+                    <div class="form-group">
+                        <label>節目類型</label>
+                        <input class="form-control" type="text" placeholder="喜劇" readonly name="category">
+                    </div>
+                    <div class="form-group">
+                        <label for="exampleInputEmail1">Email</label>
+                        <input type="email" class="form-control"  aria-describedby="emailHelp" required name="email">
+                        <div class="invalid-feedback">
+                            請輸入Email
+                        </div>
+                    </div>
+                    <button  type="button" onclick="nextPage()" class="btn btn-primary float-right">繼續(1/2)</button>
+            </form>
+            <form class="needs-validation"  id="_form2"  style="display: none;">
+                <div id="page2">
+                    <div class="form-group">
+                        <label>單集名稱</label>
+                        <input  type="text" class="form-control" required name="episodeTitle">
+                        <div class="invalid-feedback">
+                            請輸入單集名稱
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>節目介紹</label>
+                        <textarea class="form-control" rows="3" required name="episodeDescription"></textarea>
+                        <div class="invalid-feedback">
+                            請輸入單集介紹
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Podcast音檔</label>
+                        <input type="file" class="form-control-file" accept=".mp3" name="file">
+                    </div>
+                    <button  type="button" onclick="prevPage()" class="btn btn-secondary float-left">上一頁</button>
+                    <button  type="button" onclick="submit()" class="btn btn-primary float-right">提交</button>
+                </div>
+            </form>
+        </div>
+    </body>
+    <script>
+        (function(){
+            window.addEventListener('load', function(){
+                // let form1 = document.getElementById("_form1")
+                // // let form2 = document.getElementById("_form2")
+                // form1.addEventListener('click',(e)=>{
+                //     e.preventDefault()
+                //     e.stopPropagation()
+                // })
+                // // form2.addEventListener('click',function(e){
+                // //     e.stopPropagation()
+                // //     e.preventDefault()
+                // // })
+            })
+        })()
+        function prevPage(){
+            let form1 = document.getElementById("_form1")
+            let form2 = document.getElementById("_form2")
+            form1.style.display = "block"
+            form2.style.display = "none"
+        }
+        function nextPage(){
+            let form1 = document.getElementById("_form1")
+            if(form1.checkValidity() === false){
+                form1.classList.toggle("was-validated")
+            }else{
+                let form2 = document.getElementById("_form2")
+                form1.style.display = "none"
+                form2.style.display = "block"
+            }
+        }
+        function submit(){
+            let form1 = document.getElementById("_form1")
+            let form2 = document.getElementById("_form1")
+            if(form2.checkValidity() === false){
+                form2.classList.toggle("was-validated")
+            }else{
+                let form1data = new FormData(form1)
+                let form2data = new FormData(form2)
+                console.log(form1data)
+                fetch('http://localhost:8080/upload',{
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/json'
+                    },
+                    body:JSON.stringify({
+                        channelTitle: form1data.get('channelTitle'),
+                        channelDescription: form1data.get('channelDescription'),
+                        author: form1data.get('author'),
+                        category: form1data.get('category'),
+                        email: form1data.get('email'),
+                        episodeTitle: form2data.get('episodeTitle'),
+                        episodeDescription: form2data.get('episodeTitle'),
+                        file: form2data.get('file')
+                    })
+                })
+                .then((responese)=>{
+                    return responese.json()
+                })
+                .then((obj)=>{
+                    console.log(obj)
+                })
+            }
+        }
+    </script>
+</html>
