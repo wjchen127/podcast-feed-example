@@ -17,9 +17,11 @@
   },
   "dependencies": {
     "body-parser": "^1.20.0",
+    "busboy": "^1.6.0",
     "ejs": "^3.1.8",
     "express": "^4.17.1",
-    "podcast": "^2.0.1"
+    "podcast": "^2.0.1",
+    "short-uuid": "^4.2.0"
   },
   "engines": {
     "node": "18.x",
