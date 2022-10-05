@@ -37,7 +37,7 @@
                     </div>  
                     <div class="form-group">
                         <label>節目類型</label>
-                        <input class="form-control" type="text" placeholder="喜劇" readonly name="category">
+                        <input class="form-control" type="text" placeholder="喜劇" readonly name="category" value="comedy">
                     </div>
                     <div class="form-group">
                         <label for="exampleInputEmail1">Email</label>
@@ -69,26 +69,14 @@
                         <input type="file" class="form-control-file" accept=".mp3" name="file">
                     </div>
                     <button  type="button" onclick="prevPage()" class="btn btn-secondary float-left">上一頁</button>
-                    <button  type="button" onclick="submit()" class="btn btn-primary float-right">提交</button>
+                    <button  type="button" onclick="_submit()" class="btn btn-primary float-right">提交</button>
                 </div>
             </form>
         </div>
     </body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-        (function(){
-            window.addEventListener('load', function(){
-                // let form1 = document.getElementById("_form1")
-                // // let form2 = document.getElementById("_form2")
-                // form1.addEventListener('click',(e)=>{
-                //     e.preventDefault()
-                //     e.stopPropagation()
-                // })
-                // // form2.addEventListener('click',function(e){
-                // //     e.stopPropagation()
-                // //     e.preventDefault()
-                // // })
-            })
-        })()
+        
         function prevPage(){
             let form1 = document.getElementById("_form1")
             let form2 = document.getElementById("_form2")
@@ -105,36 +93,30 @@
                 form2.style.display = "block"
             }
         }
-        function submit(){
+        function _submit(){
             let form1 = document.getElementById("_form1")
-            let form2 = document.getElementById("_form1")
+            let form2 = document.getElementById("_form2")
             if(form2.checkValidity() === false){
                 form2.classList.toggle("was-validated")
             }else{
+                
                 let form1data = new FormData(form1)
                 let form2data = new FormData(form2)
-                console.log(form1data)
-                fetch('http://localhost:8080/upload',{
+                let formData  = new FormData()
+                formData.append('channelTitle',form1data.get('channelTitle'))
+                formData.append('channelDescription',form1data.get('channelDescription'))
+                formData.append('author',form1data.get('author'))
+                formData.append('email',form1data.get('email'))
+                formData.append('episodeTitle',form2data.get('episodeTitle'))
+                formData.append('episodeDescription',form2data.get('episodeDescription'))
+                formData.append('file',form2data.get('file'))
+                
+                fetch('/upload',{
                     method: 'POST',
-                    headers: {
-                        'content-type': 'application/json'
-                    },
-                    body:JSON.stringify({
-                        channelTitle: form1data.get('channelTitle'),
-                        channelDescription: form1data.get('channelDescription'),
-                        author: form1data.get('author'),
-                        category: form1data.get('category'),
-                        email: form1data.get('email'),
-                        episodeTitle: form2data.get('episodeTitle'),
-                        episodeDescription: form2data.get('episodeTitle'),
-                        file: form2data.get('file')
-                    })
+                    body: formData,
                 })
                 .then((responese)=>{
-                    return responese.json()
-                })
-                .then((obj)=>{
-                    console.log(obj)
+                    console.log(responese)
                 })
             }
         }
