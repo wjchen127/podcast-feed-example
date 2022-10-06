@@ -12,6 +12,7 @@
         </style>
     </head>
     <body>
+        <button onclick="rediect()">redirect</button>
         <div id="formdiv">
             <form class="needs-validation"  id="_form1">
                     <div class="form-group">
@@ -27,14 +28,18 @@
                         <div class="invalid-feedback">
                             請輸入節目介紹
                         </div>
-                    </div>
+                    </div>                    
                     <div class="form-group">
                         <label>作者</label>
                         <input type="text" class="form-control" required name="author">
                         <div class="invalid-feedback">
                             請輸入作者名稱
                         </div>
-                    </div>  
+                    </div> 
+                    <div class="form-group">
+                        <label>節目頭貼</label>
+                        <input type="file" class="form-control-file" accept=".jpg" name="avatar">
+                    </div> 
                     <div class="form-group">
                         <label>節目類型</label>
                         <input class="form-control" type="text" placeholder="喜劇" readonly name="category" value="comedy">
@@ -46,7 +51,7 @@
                             請輸入Email
                         </div>
                     </div>
-                    <button  type="button" onclick="nextPage()" class="btn btn-primary float-right">繼續(1/2)</button>
+                    <button  type="button" onclick="nextPage()" class="btn btn-primary float-right">繼續</button>
             </form>
             <form class="needs-validation"  id="_form2"  style="display: none;">
                 <div id="page2">
@@ -76,7 +81,9 @@
     </body>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-        
+        function rediect(){
+            window.location.href = "https://www.google.tw"
+        }
         function prevPage(){
             let form1 = document.getElementById("_form1")
             let form2 = document.getElementById("_form2")
@@ -106,6 +113,7 @@
                 formData.append('channelTitle',form1data.get('channelTitle'))
                 formData.append('channelDescription',form1data.get('channelDescription'))
                 formData.append('author',form1data.get('author'))
+                formData.append('avatar',form1data.get('avatar'))
                 formData.append('email',form1data.get('email'))
                 formData.append('episodeTitle',form2data.get('episodeTitle'))
                 formData.append('episodeDescription',form2data.get('episodeDescription'))
@@ -116,7 +124,15 @@
                     body: formData,
                 })
                 .then((responese)=>{
-                    console.log(responese)
+                    return responese.json()
+                })
+                .then((obj)=>{
+                    if(typeof obj.redirectUrl !== undefined){
+                        window.location.href = obj.redirectUrl
+                    }
+                })
+                .then((err)=>{
+                    console.log(err)
                 })
             }
         }

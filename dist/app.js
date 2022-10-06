@@ -5,19 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const podcast_1 = require("podcast");
-const fs = require('fs-extra');
+const fs = require('fs');
 const busboy = require('busboy');
 const shortuuid = require('short-uuid');
-// var multer  = require('multer')
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     cb(null, 'dist/public')
-//   },
-//   filename: function (req, file, cb) {
-//     cb(null, Date.now() + ".mp3")
-//   }
-// })
-// var upload = multer({storage:storage})
 const app = (0, express_1.default)();
 const port = 8080;
 const bodyParser = require('body-parser');
@@ -31,19 +21,18 @@ app.set('views', __dirname + '/views');
 app.get('/', (req, res) => {
     res.render('hello');
 });
-app.use('/getxml', express_1.default.static(__dirname + '/public/me.xml'));
-app.use('/getavatar', express_1.default.static(__dirname + '/public/avatar.jpg'));
-app.use('/getmp3', express_1.default.static(__dirname + '/public/test.mp3'));
-app.use('/someoneid/:id', (req, res) => {
-    res.send('這是某人的某集podcast頁面, 單集id為:' + req.params.id);
+app.get('/someoneid/:id', (req, res) => {
+    res.send(`這是某人的podcast頁面, xml連結:https://podcast-feed-example-364516.de.r.appspot.com/getxml/${req.params.id}`);
 });
 app.post('/upload', (req, res) => {
     const uuid = shortuuid.generate();
+    console.log(uuid);
     const bb = busboy({ headers: req.headers });
     let formData = new Map();
     req.pipe(bb);
     bb.on('file', (name, file, info) => {
-        const saveTo = `dist/public/${uuid}.mp3`;
+        let extension = info.filename.split('.').pop();
+        const saveTo = `dist/public/${uuid}.${extension}`;
         file.pipe(fs.createWriteStream(saveTo));
     });
     bb.on('field', (name, val, info) => {
@@ -59,9 +48,9 @@ app.post('/upload', (req, res) => {
         const feed = new podcast_1.Podcast({
             title: channelTitle,
             description: channelDescription,
-            feedUrl: 'https://podcast-feed-example-364516.de.r.appspot.com/getdexml',
-            siteUrl: 'https://podcast-feed-example-364516.de.r.appspot.com',
-            imageUrl: 'https://podcast-feed-example-364516.de.r.appspot.com/getavater',
+            feedUrl: `https://podcast-feed-example-364516.de.r.appspot.com/getxml/${uuid}`,
+            siteUrl: `https://podcast-feed-example-364516.de.r.appspot.com/someoneid/${uuid}`,
+            imageUrl: `https://podcast-feed-example-364516.de.r.appspot.com/getavater/${uuid}`,
             author: formData.get('author'),
             copyright: `2022 ${author}`,
             language: 'zh',
@@ -80,7 +69,7 @@ app.post('/upload', (req, res) => {
         feed.addItem({
             title: episodeTitle,
             description: episodeDescription,
-            url: 'https://podcast-feed-example-364516.de.r.appspot.com/someoneid/fwfvwef',
+            url: `https://podcast-feed-example-364516.de.r.appspot.com/someoneid//${uuid}`,
             guid: uuid,
             author: author,
             date: new Date(),
@@ -92,9 +81,54 @@ app.post('/upload', (req, res) => {
             itunesDuration: 0.033,
         });
         const xml = feed.buildXml();
-        fs.writeFile(`dist/public/${uuid}.xml`, xml);
-        res.send(xml);
+        fs.writeFileSync(`dist/public/${uuid}.xml`, xml);
     });
+    res.json({ id: `${uuid}`, redirectUrl: `https://podcast-feed-example-364516.de.r.appspot.com/someoneid/${uuid}` });
+});
+app.get('/getxml/:id', (req, res, next) => {
+    try {
+        if (fs.existsSync(`dist/public/${req.params.id}.xml`)) {
+            const data = fs.readFileSync(`dist/public/${req.params.id}.xml`, { encoding: 'utf8', flag: 'r' });
+            res.set('Content-Type', 'text/xml');
+            res.send(data);
+        }
+        else {
+            res.send("404 not found");
+        }
+    }
+    catch (e) {
+        next(e);
+    }
+});
+app.get('/getmp3/:id', (req, res, next) => {
+    try {
+        if (fs.existsSync(`dist/public/${req.params.id}.mp3`)) {
+            const data = fs.readFileSync(`dist/public/${req.params.id}.mp3`, { flag: 'r' });
+            res.set('Content-Type', 'audio/mpeg');
+            res.send(data);
+        }
+        else {
+            res.send("404 not found");
+        }
+    }
+    catch (e) {
+        next(e);
+    }
+});
+app.get('/getavatar/:id', (req, res, next) => {
+    try {
+        if (fs.existsSync(`dist/public/${req.params.id}.jpg`)) {
+            const data = fs.readFileSync(`dist/public/${req.params.id}.jpg`, { flag: 'r' });
+            res.set('Content-Type', 'image/jpeg');
+            res.send(data);
+        }
+        else {
+            res.send("404 not found");
+        }
+    }
+    catch (e) {
+        next(e);
+    }
 });
 app.listen(port, () => {
     return console.log(`Express is listening at http://localhost:${port}`);

@@ -6,6 +6,18 @@ const shortuuid = require('short-uuid')
 const app = express();
 const port = 8080;
 const bodyParser = require('body-parser')
+const {Storage} = require('@google-cloud/storage')
+const stream = require('stream')
+const path = require('path')
+const Readable = require('stream').Readable
+//Google storage 設定
+let projectId = 'podcast-feed-test'
+let keyFilename = '../mykey.json'
+const storage = new Storage({
+  projectId,
+  keyFilename: path.join('__dirname',keyFilename)
+})
+const myBucket = storage.bucket('podcast-feed-test.appspot.com')
 
 
 // parse application/x-www-form-urlencoded
@@ -22,6 +34,37 @@ app.get('/', (req, res) => {
   res.render('hello');
 });
 
+app.get('/test', (req,res)=>{
+  res.render('test')
+})
+app.post('/testupload', (req,res)=>{
+  const uuid = shortuuid.generate()
+  const bb = busboy({ headers: req.headers })
+  bb.on('file', (name, file, info)=>{
+    console.log("file uploading...")
+    const extension = info.filename.split(".").pop()
+    const blob = myBucket.file(`uuid.${extension}`)
+    const blobStream = blob.createWriteStream({
+      resumable: false
+    })
+    file.pipe(blobStream)
+
+    return new Promise((resolve, reject)=>{
+      file.on('end', () => {
+        blobStream.end();
+      })
+      blobStream.on('finish',()=>{
+        console.log('upload finished!')
+        return resolve
+      })
+      blobStream.on('error',reject)
+    })
+  })
+  bb.on('close', ()=>{ })
+  req.pipe(bb)
+  res.send("aaa")
+})
+
 app.get('/someoneid/:id',(req, res)=>{
   res.send(`這是某人的podcast頁面, xml連結:https://podcast-feed-example-364516.de.r.appspot.com/getxml/${req.params.id}`)
 })
@@ -29,18 +72,31 @@ app.get('/someoneid/:id',(req, res)=>{
 
 
 app.post('/upload',(req, res)=>{
+
   const uuid = shortuuid.generate()
   console.log(uuid)
   const bb = busboy({ headers: req.headers })
   let formData = new Map()
-  req.pipe(bb)
-
   
   bb.on('file', (name, file, info) => {
-   
-    let extension = info.filename.split('.').pop()
-    const saveTo = `dist/public/${uuid}.${extension}`;
-    file.pipe(fs.createWriteStream(saveTo))
+    console.log("file uploading...")
+    const extension = info.filename.split(".").pop()
+    const blob = myBucket.file(`${uuid}.${extension}`)
+    const blobStream = blob.createWriteStream({
+      resumable: false
+    })
+    file.pipe(blobStream)
+
+    return new Promise((resolve, reject)=>{
+      file.on('end', () => {
+        blobStream.end();
+      })
+      blobStream.on('finish',()=>{
+        console.log('files upload')
+        return resolve
+      })
+      blobStream.on('error',reject)
+    })
   })
   bb.on('field', (name, val, info) => {
     formData.set(name, val)
@@ -88,54 +144,79 @@ app.post('/upload',(req, res)=>{
       itunesSummary: 'I am a summary',
       itunesDuration: 0.033,
     })
-
     const xml = feed.buildXml()
-    fs.writeFileSync(`dist/public/${uuid}.xml`,xml)
-    res.json({id: `${uuid}`, redirect: true})
+    const blob = myBucket.file(`${uuid}.xml`)
+    const blobStream = blob.createWriteStream({
+      resumable: false
+    })
+
+    let readableStream = new Readable({
+      read(size){
+        this.push(xml)
+        this.push(null)
+      }
+    })
+    readableStream
+    .pipe(blobStream)
+    .on('error', function(err) { console.log(err)})
+    .on('finish', function() {
+      console.log("xml uploaded")
+    })
+    
+    // readableStream.on('data', function(err,))
+    // readableStream.pipe(bucketFile.createWriteStream())
+    // .on('error', function(err){})
+    // .on('finish', function(){
+    //   console.log('upload xml to bucket is successed!')
+    // })
   })
+  req.pipe(bb)
+  res.json({id: `${uuid}`, redirectUrl: `https://podcast-feed-example-364516.de.r.appspot.com/someoneid/${uuid}`})
 })
 
 app.get('/getxml/:id',(req, res, next)=>{
   try{
-    if (fs.existsSync(`dist/public/${req.params.id}.xml`)) {
-      const data = fs.readFileSync(`dist/public/${req.params.id}.xml`,{encoding:'utf8', flag:'r'})
-      res.set('Content-Type', 'text/xml')
-      res.send(data)
-    }else{
-      res.send("404 not found")
-    }
+    const result = getFileFromBucket(`${req.params.id}.xml`)
+    res.set('Content-Type', 'text/xml')
+    res.send(result)
   }catch(e){
-    next(e)
+    res.send("404 not found.")
   }
 })
 
 app.get('/getmp3/:id',(req, res, next)=>{
+
+  
   try{
-    if (fs.existsSync(`dist/public/${req.params.id}.mp3`)) {
-      const data = fs.readFileSync(`dist/public/${req.params.id}.mp3`,{flag:'r'})
-      res.set('Content-Type', 'audio/mpeg')
-      res.send(data)
-    }else{
-      res.send("404 not found")
-    }    
+     const result = getFileFromBucket(`${req.params.id}.mp3`)
+     res.set('Content-Type', 'audio/mpeg')
+     res.send(result)
   }catch(e){
-    next(e)
+    res.send("404 not found.")
   }
 })
 
+
 app.get('/getavatar/:id',(req, res, next)=>{
   try{
-    if (fs.existsSync(`dist/public/${req.params.id}.jpg`)) {
-      const data = fs.readFileSync(`dist/public/${req.params.id}.jpg`,{flag:'r'})
-      res.set('Content-Type', 'image/jpeg')
-      res.send(data)
-    }else{
-      res.send("404 not found")
-    }
-  }catch(e){
-    next(e)
-  }
+    const result = getFileFromBucket(`${req.params.id}.jpg`)
+    res.set('Content-Type', 'image/jpeg')
+    res.send(result)
+ }catch(e){
+   res.send("404 not found.")
+ }
 })
+
+
+function getFileFromBucket(filename){
+  return new Promise<void>((resolve, reject) => {
+    const file = myBucket.file(filename)
+    file.get(function(err, file, apiResponse) {
+      if(err) throw err    
+      resolve(file)
+    })
+  })
+}
 
 app.listen(port, () => {
   return console.log(`Express is listening at http://localhost:${port}`);
