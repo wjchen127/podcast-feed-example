@@ -10,6 +10,7 @@ const {Storage} = require('@google-cloud/storage')
 const stream = require('stream')
 const path = require('path')
 const Readable = require('stream').Readable
+const websiteURL = "https://podcast-feed-test.de.r.appspot.com"
 //Google storage 設定
 let projectId = 'podcast-feed-test'
 let keyFilename = '../mykey.json'
@@ -66,7 +67,7 @@ app.post('/testupload', (req,res)=>{
 })
 
 app.get('/someoneid/:id',(req, res)=>{
-  res.send(`這是某人的podcast頁面, xml連結:https://podcast-feed-example-364516.de.r.appspot.com/getxml/${req.params.id}`)
+  res.send(`這是某人的podcast頁面, xml連結:${websiteURL}/getxml/${req.params.id}`)
 })
 
 
@@ -111,9 +112,9 @@ app.post('/upload',(req, res)=>{
     const feed = new Podcast({
       title: channelTitle,
       description: channelDescription,
-      feedUrl: `https://podcast-feed-example-364516.de.r.appspot.com/getxml/${uuid}`,
-      siteUrl: `https://podcast-feed-example-364516.de.r.appspot.com/someoneid/${uuid}`,
-      imageUrl: `https://podcast-feed-example-364516.de.r.appspot.com/getavater/${uuid}`,
+      feedUrl: `${websiteURL}/getxml/${uuid}`,
+      siteUrl: `${websiteURL}/someoneid/${uuid}`,
+      imageUrl: `${websiteURL}/getavater/${uuid}`,
       author: formData.get('author'),
       copyright: `2022 ${author}`,
       language: 'zh',
@@ -127,17 +128,17 @@ app.post('/upload',(req, res)=>{
       itunesCategory: [{
           text: 'Comedy'
       }],
-      itunesImage: `https://podcast-feed-example-364516.de.r.appspot.com/getavater/${uuid}`
+      itunesImage: `${websiteURL}/getavater/${uuid}`
     })
     
     feed.addItem({
       title:  episodeTitle,
       description: episodeDescription,
-      url: `https://podcast-feed-example-364516.de.r.appspot.com/someoneid//${uuid}`, // link to the item
+      url: `${websiteURL}/someoneid//${uuid}`, // link to the item
       guid: uuid, // optional - defaults to url
       author: author, // optional - defaults to feed author property
       date: new Date(), // any format that js Date can parse.
-      enclosure : {url:`https://podcast-feed-example-364516.de.r.appspot.com/getmp3/${uuid}`}, // optional enclosure
+      enclosure : {url:`${websiteURL}/getmp3/${uuid}`}, // optional enclosure
       itunesAuthor: author,
       itunesExplicit: false,
       itunesSubtitle: 'I am a sub title',
@@ -162,35 +163,46 @@ app.post('/upload',(req, res)=>{
     .on('finish', function() {
       console.log("xml uploaded")
     })
-    
-    // readableStream.on('data', function(err,))
-    // readableStream.pipe(bucketFile.createWriteStream())
-    // .on('error', function(err){})
-    // .on('finish', function(){
-    //   console.log('upload xml to bucket is successed!')
-    // })
   })
   req.pipe(bb)
-  res.json({id: `${uuid}`, redirectUrl: `https://podcast-feed-example-364516.de.r.appspot.com/someoneid/${uuid}`})
+  res.json({id: `${uuid}`, redirectUrl: `${websiteURL}/someoneid/${uuid}`})
 })
 
 app.get('/getxml/:id',(req, res, next)=>{
   try{
-    const result = getFileFromBucket(`${req.params.id}.xml`)
-    res.set('Content-Type', 'text/xml')
-    res.send(result)
+    res.setHeader("content-type", "text/xml");
+    myBucket.file(`${req.params.id}.xml`)
+       .createReadStream() 
+       .on('end', () => {
+           console.log("ended");
+       })
+       .on('response', ans => {
+           console.log("responded");
+       })
+       .on('error', err => {
+           console.log("Error", err)
+       })
+       .pipe(res)
   }catch(e){
     res.send("404 not found.")
   }
 })
 
 app.get('/getmp3/:id',(req, res, next)=>{
-
-  
   try{
-     const result = getFileFromBucket(`${req.params.id}.mp3`)
-     res.set('Content-Type', 'audio/mpeg')
-     res.send(result)
+    res.setHeader("content-type", "audio/mpeg");
+    myBucket.file(`${req.params.id}.mp3`)
+       .createReadStream() 
+       .on('end', () => {
+           console.log("ended");
+       })
+       .on('response', ans => {
+           console.log("responded");
+       })
+       .on('error', err => {
+           console.log("Error", err)
+       })
+       .pipe(res)
   }catch(e){
     res.send("404 not found.")
   }
@@ -199,24 +211,23 @@ app.get('/getmp3/:id',(req, res, next)=>{
 
 app.get('/getavatar/:id',(req, res, next)=>{
   try{
-    const result = getFileFromBucket(`${req.params.id}.jpg`)
-    res.set('Content-Type', 'image/jpeg')
-    res.send(result)
+    res.setHeader("content-type", "image/jpeg");
+    myBucket.file(`${req.params.id}.jpg`)
+       .createReadStream() 
+       .on('end', () => {
+           console.log("ended");
+       })
+       .on('response', ans => {
+           console.log("responded");
+       })
+       .on('error', err => {
+           console.log("Error", err)
+       })
+       .pipe(res)
  }catch(e){
    res.send("404 not found.")
  }
 })
-
-
-function getFileFromBucket(filename){
-  return new Promise<void>((resolve, reject) => {
-    const file = myBucket.file(filename)
-    file.get(function(err, file, apiResponse) {
-      if(err) throw err    
-      resolve(file)
-    })
-  })
-}
 
 app.listen(port, () => {
   return console.log(`Express is listening at http://localhost:${port}`);
