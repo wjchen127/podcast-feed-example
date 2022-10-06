@@ -114,7 +114,7 @@ app.post('/upload',(req, res)=>{
       description: channelDescription,
       feedUrl: `${websiteURL}/getxml/${uuid}`,
       siteUrl: `${websiteURL}/someoneid/${uuid}`,
-      imageUrl: `${websiteURL}/getavater/${uuid}`,
+      imageUrl: `${websiteURL}/getavatar/${uuid}`,
       author: formData.get('author'),
       copyright: `2022 ${author}`,
       language: 'zh',
@@ -128,7 +128,7 @@ app.post('/upload',(req, res)=>{
       itunesCategory: [{
           text: 'Comedy'
       }],
-      itunesImage: `${websiteURL}/getavater/${uuid}`
+      itunesImage: `${websiteURL}/getavatar/${uuid}.jpg`
     })
     
     feed.addItem({
@@ -138,7 +138,7 @@ app.post('/upload',(req, res)=>{
       guid: uuid, // optional - defaults to url
       author: author, // optional - defaults to feed author property
       date: new Date(), // any format that js Date can parse.
-      enclosure : {url:`${websiteURL}/getmp3/${uuid}`}, // optional enclosure
+      enclosure : {url:`${websiteURL}/getmp3/${uuid}`, type:"audio/mpeg"}, // optional enclosure
       itunesAuthor: author,
       itunesExplicit: false,
       itunesSubtitle: 'I am a sub title',
@@ -210,9 +210,11 @@ app.get('/getmp3/:id',(req, res, next)=>{
 
 
 app.get('/getavatar/:id',(req, res, next)=>{
+  let fullFileName = req.params.id
+  let filename = fullFileName.split(".")[0]
   try{
     res.setHeader("content-type", "image/jpeg");
-    myBucket.file(`${req.params.id}.jpg`)
+    myBucket.file(`${filename}.jpg`)
        .createReadStream() 
        .on('end', () => {
            console.log("ended");
