@@ -1,6 +1,5 @@
 import express from 'express';
 import { Podcast } from 'podcast'
-const fs = require('fs')
 const busboy = require('busboy')
 const shortuuid = require('short-uuid')
 const app = express();
@@ -33,44 +32,11 @@ app.set('views', __dirname + '/views')
 
 app.get('/', (req, res) => {
   res.render('hello');
-});
-
-app.get('/test', (req,res)=>{
-  res.render('test')
-})
-app.post('/testupload', (req,res)=>{
-  const uuid = shortuuid.generate()
-  const bb = busboy({ headers: req.headers })
-  bb.on('file', (name, file, info)=>{
-    console.log("file uploading...")
-    const extension = info.filename.split(".").pop()
-    const blob = myBucket.file(`uuid.${extension}`)
-    const blobStream = blob.createWriteStream({
-      resumable: false
-    })
-    file.pipe(blobStream)
-
-    return new Promise((resolve, reject)=>{
-      file.on('end', () => {
-        blobStream.end();
-      })
-      blobStream.on('finish',()=>{
-        console.log('upload finished!')
-        return resolve
-      })
-      blobStream.on('error',reject)
-    })
-  })
-  bb.on('close', ()=>{ })
-  req.pipe(bb)
-  res.send("aaa")
 })
 
 app.get('/someoneid/:id',(req, res)=>{
   res.send(`這是某人的podcast頁面, xml連結:${websiteURL}/getxml/${req.params.id}`)
 })
-
-
 
 app.post('/upload',(req, res)=>{
 
